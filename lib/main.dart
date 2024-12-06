@@ -78,15 +78,43 @@ class MapSampleState extends State<MapSample> {
     zoom: 19,
   );
 
+  // Add a marker
+  final Set<Marker> _markers = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _addMarker();
+  }
+
+  Future<void> _addMarker() async {
+    final BitmapDescriptor markerIcon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/marker.png',
+    );
+
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('centerMarker'),
+          position: _kGooglePlex.target,
+          icon: markerIcon,
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
-        mapType: MapType.hybrid,
+        mapType: MapType.satellite,
         initialCameraPosition: _kGooglePlex,
+        markers: _markers, // Add markers to the map
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
+        myLocationButtonEnabled: false,
       ),
     );
   }
