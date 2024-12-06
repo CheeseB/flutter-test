@@ -75,16 +75,19 @@ class MapSampleState extends State<MapSample> {
 
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(38.097418, 127.072470),
-    zoom: 19,
+    zoom: 19.5,
   );
 
   // Add a marker
   final Set<Marker> _markers = {};
 
+  final Set<Polyline> _polylines = {};
+
   @override
   void initState() {
     super.initState();
     _addMarker();
+    _addVerticalLines();
   }
 
   Future<void> _addMarker() async {
@@ -104,18 +107,70 @@ class MapSampleState extends State<MapSample> {
     });
   }
 
+  void _addVerticalLines() {
+    const double gap = 0.0001; // Keep the gap tight
+    final double startLat =
+        _kGooglePlex.target.latitude - 0.01; // Extend the start latitude
+    final double endLat =
+        _kGooglePlex.target.latitude + 0.01; // Extend the end latitude
+    final double centerLng = _kGooglePlex.target.longitude;
+
+    setState(() {
+      _polylines.addAll(
+        List.generate(5, (index) {
+          int i = index - 2; // Adjust index to range from -2 to 2
+          return Polyline(
+            polylineId: PolylineId('line_$i'),
+            color: i == 0 ? Colors.red : Colors.white,
+            width: 2,
+            points: [
+              LatLng(startLat, centerLng + i * gap),
+              LatLng(endLat, centerLng + i * gap),
+            ],
+          );
+        }),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        mapType: MapType.satellite,
-        initialCameraPosition: _kGooglePlex,
-        markers: _markers, // Add markers to the map
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-        myLocationButtonEnabled: false,
+      body: Stack(
+        children: [
+          GoogleMap(
+            mapType: MapType.satellite,
+            initialCameraPosition: _kGooglePlex,
+            markers: _markers,
+            polylines: _polylines, // Add polylines to the map
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+            },
+            myLocationButtonEnabled: false,
+          ),
+          Positioned(
+            bottom: 50,
+            right: 10,
+            child: FloatingActionButton(
+              onPressed: _addAMarker,
+              child: const Text('A'),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _addAMarker() {
+    setState(() {
+      _markers.add(
+        Marker(
+          markerId: const MarkerId('AMarker'),
+          position: _kGooglePlex.target,
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+        ),
+      );
+    });
   }
 }
