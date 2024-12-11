@@ -15,7 +15,7 @@ class MapSampleState extends State<MapSample> {
       Completer<GoogleMapController>();
   static const CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(38.097418, 127.072470),
-    zoom: 18,
+    zoom: 18.5,
   );
 
   final Set<Marker> _markers = {};
@@ -132,11 +132,12 @@ class MapSampleState extends State<MapSample> {
     const double minLng = 124.0;
     const double maxLng = 132.0;
 
-    // Check if the current camera position is within Korea
+    // Check if the current camera position is within Korea and zoom level is 18 or higher
     if (_currentCameraPosition.target.latitude >= minLat &&
         _currentCameraPosition.target.latitude <= maxLat &&
         _currentCameraPosition.target.longitude >= minLng &&
-        _currentCameraPosition.target.longitude <= maxLng) {
+        _currentCameraPosition.target.longitude <= maxLng &&
+        _currentCameraPosition.zoom >= 17) {
       return {
         TileOverlay(
           tileOverlayId: const TileOverlayId('sampleId'),
