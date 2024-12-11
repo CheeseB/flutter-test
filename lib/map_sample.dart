@@ -24,6 +24,8 @@ class MapSampleState extends State<MapSample> {
 
   final TileProvider _googleTileProvider = CustomTileProvider();
 
+  CameraPosition _currentCameraPosition = _initialCameraPosition;
+
   @override
   void initState() {
     super.initState();
@@ -90,12 +92,12 @@ class MapSampleState extends State<MapSample> {
               _controller.complete(controller);
             },
             myLocationButtonEnabled: false,
-            tileOverlays: {
-              TileOverlay(
-                  tileOverlayId: const TileOverlayId('sampleId'),
-                  tileProvider: _googleTileProvider,
-                  zIndex: -1),
+            onCameraMove: (CameraPosition position) {
+              setState(() {
+                _currentCameraPosition = position;
+              });
             },
+            tileOverlays: _getTileOverlays(),
           ),
           Positioned(
             bottom: 50,
@@ -121,6 +123,30 @@ class MapSampleState extends State<MapSample> {
         ),
       );
     });
+  }
+
+  Set<TileOverlay> _getTileOverlays() {
+    // Define the bounding box for Korea
+    const double minLat = 33.0;
+    const double maxLat = 43.0;
+    const double minLng = 124.0;
+    const double maxLng = 132.0;
+
+    // Check if the current camera position is within Korea
+    if (_currentCameraPosition.target.latitude >= minLat &&
+        _currentCameraPosition.target.latitude <= maxLat &&
+        _currentCameraPosition.target.longitude >= minLng &&
+        _currentCameraPosition.target.longitude <= maxLng) {
+      return {
+        TileOverlay(
+          tileOverlayId: const TileOverlayId('sampleId'),
+          tileProvider: _googleTileProvider,
+          zIndex: -1,
+        ),
+      };
+    } else {
+      return {};
+    }
   }
 }
 
