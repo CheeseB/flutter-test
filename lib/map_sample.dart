@@ -20,10 +20,7 @@ class MapSampleState extends State<MapSample> {
 
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
-  final double _rotationAngle = 0.0;
-
   final TileProvider _googleTileProvider = CustomTileProvider();
-
   CameraPosition _currentCameraPosition = _initialCameraPosition;
 
   @override
@@ -33,22 +30,26 @@ class MapSampleState extends State<MapSample> {
   }
 
   void _initializeMap() {
-    _addMarker();
+    _addInitialMarker();
     _addVerticalLines();
   }
 
-  Future<void> _addMarker() async {
+  Future<void> _addInitialMarker() async {
     final BitmapDescriptor markerIcon = await BitmapDescriptor.asset(
       const ImageConfiguration(size: Size(48, 48)),
       'assets/marker.png',
     );
 
+    _addMarker(_initialCameraPosition.target, markerIcon, 'centerMarker');
+  }
+
+  void _addMarker(LatLng position, BitmapDescriptor icon, String markerId) {
     setState(() {
       _markers.add(
         Marker(
-          markerId: const MarkerId('centerMarker'),
-          position: _initialCameraPosition.target,
-          icon: markerIcon,
+          markerId: MarkerId(markerId),
+          position: position,
+          icon: icon,
         ),
       );
     });
@@ -83,61 +84,51 @@ class MapSampleState extends State<MapSample> {
     return Scaffold(
       body: Stack(
         children: [
-          GoogleMap(
-            mapType: MapType.satellite,
-            initialCameraPosition: _initialCameraPosition,
-            markers: _markers,
-            polylines: _polylines,
-            onMapCreated: (GoogleMapController controller) {
-              _controller.complete(controller);
-            },
-            myLocationButtonEnabled: false,
-            onCameraMove: (CameraPosition position) {
-              setState(() {
-                _currentCameraPosition = position;
-              });
-            },
-            tileOverlays: _getTileOverlays(),
-          ),
-          Positioned(
-            bottom: 50,
-            right: 10,
-            child: FloatingActionButton(
-              onPressed: _addAMarker,
-              child: const Text('A'),
-            ),
-          ),
+          _buildGoogleMap(),
+          _buildFloatingActionButton(),
         ],
       ),
     );
   }
 
-  void _addAMarker() {
-    setState(() {
-      _markers.add(
-        Marker(
-          markerId: const MarkerId('AMarker'),
-          position: _initialCameraPosition.target,
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-        ),
-      );
-    });
+  GoogleMap _buildGoogleMap() {
+    return GoogleMap(
+      mapType: MapType.satellite,
+      initialCameraPosition: _initialCameraPosition,
+      markers: _markers,
+      polylines: _polylines,
+      onMapCreated: (GoogleMapController controller) {
+        _controller.complete(controller);
+      },
+      myLocationButtonEnabled: false,
+      onCameraMove: (CameraPosition position) {
+        setState(() {
+          _currentCameraPosition = position;
+        });
+      },
+      tileOverlays: _getTileOverlays(),
+    );
+  }
+
+  Positioned _buildFloatingActionButton() {
+    return Positioned(
+      bottom: 50,
+      right: 10,
+      child: FloatingActionButton(
+        onPressed: () {
+          _addMarker(
+            _initialCameraPosition.target,
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+            'AMarker',
+          );
+        },
+        child: const Text('A'),
+      ),
+    );
   }
 
   Set<TileOverlay> _getTileOverlays() {
-    // Define the bounding box for Korea
-    const double minLat = 33.0;
-    const double maxLat = 43.0;
-    const double minLng = 124.0;
-    const double maxLng = 132.0;
-
-    // Check if the current camera position is within Korea and zoom level is 18 or higher
-    if (_currentCameraPosition.target.latitude >= minLat &&
-        _currentCameraPosition.target.latitude <= maxLat &&
-        _currentCameraPosition.target.longitude >= minLng &&
-        _currentCameraPosition.target.longitude <= maxLng &&
-        _currentCameraPosition.zoom >= 17) {
+    if (_isWithinKorea() && _currentCameraPosition.zoom >= 17) {
       return {
         TileOverlay(
           tileOverlayId: const TileOverlayId('sampleId'),
@@ -148,6 +139,13 @@ class MapSampleState extends State<MapSample> {
     } else {
       return {};
     }
+  }
+
+  bool _isWithinKorea() {
+    return _currentCameraPosition.target.latitude >= 33.0 &&
+        _currentCameraPosition.target.latitude <= 43.0 &&
+        _currentCameraPosition.target.longitude >= 124.0 &&
+        _currentCameraPosition.target.longitude <= 132.0;
   }
 }
 
