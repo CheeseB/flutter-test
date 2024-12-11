@@ -37,7 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => StaticMapSample()),
+                  MaterialPageRoute(
+                      builder: (context) => const StaticMapSample()),
                 );
               },
               child: const Text('Static Map'),
