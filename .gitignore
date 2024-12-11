@@ -47,3 +47,6 @@ local.properties
 
 # iOS
 ios/Runner/GoogleService-Info.plist
+
+# env
+.env

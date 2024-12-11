@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'map_sample.dart';
 import 'map_sample_webview.dart';
+import 'static_map.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -27,11 +28,29 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
+                  MaterialPageRoute(builder: (context) => const MapSample()),
+                );
+              },
+              child: const Text('Map'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => StaticMapSample()),
+                );
+              },
+              child: const Text('Static Map'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
                   MaterialPageRoute(
                       builder: (context) => const MapSampleWebView()),
                 );
               },
-              child: const Text('Map'),
+              child: const Text('WebView'),
             ),
           ],
         ),
