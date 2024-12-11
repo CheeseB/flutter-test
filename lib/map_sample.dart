@@ -85,7 +85,6 @@ class MapSampleState extends State<MapSample> {
       body: Stack(
         children: [
           _buildGoogleMap(),
-          _buildFloatingActionButton(),
         ],
       ),
     );
@@ -107,23 +106,6 @@ class MapSampleState extends State<MapSample> {
         });
       },
       tileOverlays: _getTileOverlays(),
-    );
-  }
-
-  Positioned _buildFloatingActionButton() {
-    return Positioned(
-      bottom: 50,
-      right: 10,
-      child: FloatingActionButton(
-        onPressed: () {
-          _addMarker(
-            _initialCameraPosition.target,
-            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
-            'AMarker',
-          );
-        },
-        child: const Text('A'),
-      ),
     );
   }
 
