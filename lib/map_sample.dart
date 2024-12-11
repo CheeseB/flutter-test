@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -20,6 +21,8 @@ class MapSampleState extends State<MapSample> {
   final Set<Marker> _markers = {};
   final Set<Polyline> _polylines = {};
   final double _rotationAngle = 0.0;
+
+  final TileProvider _googleTileProvider = CustomTileProvider();
 
   @override
   void initState() {
@@ -87,6 +90,12 @@ class MapSampleState extends State<MapSample> {
               _controller.complete(controller);
             },
             myLocationButtonEnabled: false,
+            tileOverlays: {
+              TileOverlay(
+                  tileOverlayId: const TileOverlayId('sampleId'),
+                  tileProvider: _googleTileProvider,
+                  zIndex: -1),
+            },
           ),
           Positioned(
             bottom: 50,
@@ -112,5 +121,17 @@ class MapSampleState extends State<MapSample> {
         ),
       );
     });
+  }
+}
+
+class CustomTileProvider extends TileProvider {
+  @override
+  Future<Tile> getTile(int x, int y, int? zoom) async {
+    final url = 'http://mt0.google.com/vt/lyrs=s&hl=en&x=$x&y=$y&z=$zoom';
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return Tile(256, 256, response.bodyBytes);
+    }
+    return TileProvider.noTile;
   }
 }
