@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
+import 'package:my_flutter/utils/map.dart';
+import 'package:my_flutter/providers/custom_tile_provider.dart';
+import 'package:my_flutter/constants/index.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
@@ -14,8 +16,8 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   static const CameraPosition _initialCameraPosition = CameraPosition(
-    target: LatLng(38.097418, 127.072470),
-    zoom: 18.5,
+    target: LatLng(initialLatitude, initialLongitude),
+    zoom: initialZoom,
   );
 
   final Set<Marker> _markers = {};
@@ -35,47 +37,20 @@ class MapSampleState extends State<MapSample> {
   }
 
   Future<void> _addInitialMarker() async {
-    final BitmapDescriptor markerIcon = await BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(48, 48)),
-      'assets/marker.png',
-    );
-
+    final BitmapDescriptor markerIcon =
+        await loadMarkerIcon(centerMarkerIcon, const Size(48, 48));
     _addMarker(_initialCameraPosition.target, markerIcon, 'centerMarker');
   }
 
   void _addMarker(LatLng position, BitmapDescriptor icon, String markerId) {
     setState(() {
-      _markers.add(
-        Marker(
-          markerId: MarkerId(markerId),
-          position: position,
-          icon: icon,
-        ),
-      );
+      _markers.add(createMarker(position, icon, markerId));
     });
   }
 
   void _addVerticalLines() {
-    const double gap = 0.0001;
-    final double startLat = _initialCameraPosition.target.latitude - 0.01;
-    final double endLat = _initialCameraPosition.target.latitude + 0.01;
-    final double centerLng = _initialCameraPosition.target.longitude;
-
     setState(() {
-      _polylines.addAll(
-        List.generate(5, (index) {
-          int i = index - 2;
-          return Polyline(
-            polylineId: PolylineId('line_$i'),
-            color: i == 0 ? Colors.red : Colors.white,
-            width: 2,
-            points: [
-              LatLng(startLat, centerLng + i * gap),
-              LatLng(endLat, centerLng + i * gap),
-            ],
-          );
-        }),
-      );
+      _polylines.addAll(createVerticalLines(_initialCameraPosition.target));
     });
   }
 
@@ -110,35 +85,6 @@ class MapSampleState extends State<MapSample> {
   }
 
   Set<TileOverlay> _getTileOverlays() {
-    if (_isWithinKorea() && _currentCameraPosition.zoom >= 17) {
-      return {
-        TileOverlay(
-          tileOverlayId: const TileOverlayId('sampleId'),
-          tileProvider: _googleTileProvider,
-          zIndex: -1,
-        ),
-      };
-    } else {
-      return {};
-    }
-  }
-
-  bool _isWithinKorea() {
-    return _currentCameraPosition.target.latitude >= 33.0 &&
-        _currentCameraPosition.target.latitude <= 43.0 &&
-        _currentCameraPosition.target.longitude >= 124.0 &&
-        _currentCameraPosition.target.longitude <= 132.0;
-  }
-}
-
-class CustomTileProvider extends TileProvider {
-  @override
-  Future<Tile> getTile(int x, int y, int? zoom) async {
-    final url = 'http://mt0.google.com/vt/lyrs=s&hl=en&x=$x&y=$y&z=$zoom';
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      return Tile(256, 256, response.bodyBytes);
-    }
-    return TileProvider.noTile;
+    return getTileOverlays(_currentCameraPosition, _googleTileProvider);
   }
 }
