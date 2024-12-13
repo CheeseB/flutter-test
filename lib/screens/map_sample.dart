@@ -17,16 +17,18 @@ class MapSample extends StatefulWidget {
 class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
+  final Set<Marker> _markers = {};
+  final Set<Polyline> _polylines = {};
+  final TileProvider _googleTileProvider = CustomTileProvider();
+
   static const CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(initialLatitude, initialLongitude),
     zoom: initialZoom,
   );
-
-  final Set<Marker> _markers = {};
-  final Set<Polyline> _polylines = {};
-  final TileProvider _googleTileProvider = CustomTileProvider();
   CameraPosition _currentCameraPosition = _initialCameraPosition;
+
   double _currentAngle = 0.0; // Track the current rotation angle
+  bool _isRotatable = false; // Track if lines are rotatable
 
   @override
   void initState() {
@@ -42,7 +44,7 @@ class MapSampleState extends State<MapSample> {
   Future<void> _addInitialMarker() async {
     final BitmapDescriptor markerIcon =
         await loadMarkerIcon(centerMarkerIcon, const Size(48, 48));
-    _addMarker(_initialCameraPosition.target, markerIcon, 'centerMarker');
+    _addMarker(_currentCameraPosition.target, markerIcon, 'centerMarker');
   }
 
   void _addMarker(LatLng position, BitmapDescriptor icon, String markerId) {
@@ -53,16 +55,24 @@ class MapSampleState extends State<MapSample> {
 
   void _addVerticalLines() {
     setState(() {
-      _polylines.addAll(createVerticalLines(_initialCameraPosition.target));
+      _polylines.addAll(createVerticalLines(_currentCameraPosition.target));
     });
   }
 
   void _rotateLines(double delta) {
+    if (_isRotatable) {
+      setState(() {
+        _currentAngle -= delta * 0.1; // Subtract to follow the finger direction
+        _polylines.clear();
+        _polylines.addAll(
+            createRotatedLines(_currentCameraPosition.target, _currentAngle));
+      });
+    }
+  }
+
+  void _toggleRotatable() {
     setState(() {
-      _currentAngle -= delta * 0.1; // Subtract to follow the finger direction
-      _polylines.clear();
-      _polylines.addAll(
-          createRotatedLines(_initialCameraPosition.target, _currentAngle));
+      _isRotatable = !_isRotatable;
     });
   }
 
@@ -72,10 +82,21 @@ class MapSampleState extends State<MapSample> {
       body: Stack(
         children: [
           GestureDetector(
-            onPanUpdate: (details) {
-              _rotateLines(details.delta.dx);
-            },
+            onPanUpdate: _isRotatable
+                ? (details) {
+                    _rotateLines(details.delta.dx);
+                  }
+                : null,
             child: _buildGoogleMap(),
+          ),
+          Positioned(
+            bottom: 20,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: _toggleRotatable,
+              child:
+                  Icon(_isRotatable ? Icons.check_circle : Icons.rotate_left),
+            ),
           ),
         ],
       ),

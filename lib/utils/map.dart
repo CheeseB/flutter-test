@@ -37,28 +37,6 @@ List<Polyline> createVerticalLines(LatLng center) {
   });
 }
 
-bool isWithinKorea(CameraPosition position) {
-  return position.target.latitude >= 33.0 &&
-      position.target.latitude <= 43.0 &&
-      position.target.longitude >= 124.0 &&
-      position.target.longitude <= 132.0;
-}
-
-Set<TileOverlay> getTileOverlays(
-    CameraPosition position, TileProvider provider) {
-  if (isWithinKorea(position) && position.zoom >= 17) {
-    return {
-      TileOverlay(
-        tileOverlayId: const TileOverlayId('sampleId'),
-        tileProvider: provider,
-        zIndex: -1,
-      ),
-    };
-  } else {
-    return {};
-  }
-}
-
 List<Polyline> createRotatedLines(LatLng center, double angle) {
   const double gap = 0.0001;
   final double startLat = center.latitude - 0.01;
@@ -90,4 +68,26 @@ LatLng rotatePoint(LatLng point, LatLng center, double angle) {
     center.latitude + (dx * cosTheta - dy * sinTheta),
     center.longitude + (dx * sinTheta + dy * cosTheta),
   );
+}
+
+bool isWithinKorea(CameraPosition position) {
+  return position.target.latitude >= 33.0 &&
+      position.target.latitude <= 43.0 &&
+      position.target.longitude >= 124.0 &&
+      position.target.longitude <= 132.0;
+}
+
+Set<TileOverlay> getTileOverlays(
+    CameraPosition position, TileProvider provider) {
+  if (isWithinKorea(position) && position.zoom >= 17) {
+    return {
+      TileOverlay(
+        tileOverlayId: const TileOverlayId('sampleId'),
+        tileProvider: provider,
+        zIndex: -1,
+      ),
+    };
+  } else {
+    return {};
+  }
 }
