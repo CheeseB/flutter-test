@@ -26,6 +26,7 @@ class MapSampleState extends State<MapSample> {
   final Set<Polyline> _polylines = {};
   final TileProvider _googleTileProvider = CustomTileProvider();
   CameraPosition _currentCameraPosition = _initialCameraPosition;
+  double _currentAngle = 0.0; // Track the current rotation angle
 
   @override
   void initState() {
@@ -56,12 +57,26 @@ class MapSampleState extends State<MapSample> {
     });
   }
 
+  void _rotateLines(double delta) {
+    setState(() {
+      _currentAngle -= delta * 0.1; // Subtract to follow the finger direction
+      _polylines.clear();
+      _polylines.addAll(
+          createRotatedLines(_initialCameraPosition.target, _currentAngle));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          _buildGoogleMap(),
+          GestureDetector(
+            onPanUpdate: (details) {
+              _rotateLines(details.delta.dx);
+            },
+            child: _buildGoogleMap(),
+          ),
         ],
       ),
     );
