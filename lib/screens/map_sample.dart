@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:my_flutter/utils/map.dart';
-import 'package:my_flutter/providers/custom_tile_provider.dart';
-import 'package:my_flutter/constants/index.dart';
+
+import '../utils/map.dart';
+import '../providers/custom_tile_provider.dart';
+import '../constants/icon.dart';
+import '../constants/map.dart';
 
 class MapSample extends StatefulWidget {
   const MapSample({super.key});

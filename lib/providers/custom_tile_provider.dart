@@ -1,6 +1,7 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:my_flutter/constants/map.dart';
+
+import '../constants/map.dart';
 
 class CustomTileProvider extends TileProvider {
   @override
